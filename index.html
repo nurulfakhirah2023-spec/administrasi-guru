@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -18,16 +18,45 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // Masukkan atau sesuaikan komponen utama aplikasi Anda di sini
         function App() {
+            const [activeTab, setActiveTab] = React.useState('dashboard');
+
             return (
-                <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-100">
-                    <div className="bg-white p-8 rounded-2xl shadow-md max-w-lg w-full text-center">
-                        <h1 className="text-2xl font-bold text-indigo-600 mb-2">Aplikasi Administrasi Guru Profesional</h1>
-                        <p className="text-slate-600 mb-4">SMPN 1 Plampang</p>
-                        <div className="p-4 bg-indigo-50 rounded-xl text-indigo-700 text-sm">
-                            Sistem administrasi dan perangkat pembelajaran guru siap digunakan.
+                <div className="min-h-screen flex flex-col bg-slate-100">
+                    {/* Header Aplikasi */}
+                    <header className="bg-indigo-600 text-white shadow-md p-4 flex justify-between items-center">
+                        <div>
+                            <h1 className="text-xl font-bold">Aplikasi Administrasi Guru Profesional</h1>
+                            <p className="text-xs text-indigo-200">SMPN 1 Plampang</p>
                         </div>
-                    </div>
+                    </header>
+
+                    {/* Konten Utama */}
+                    <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+                        <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-200">
+                            <h2 className="text-lg font-semibold text-slate-800 mb-4">Panel Utama Administrasi</h2>
+                            <p className="text-sm text-slate-600 mb-6">
+                                Seluruh menu, pengelolaan data siswa, kisi-kisi soal, dan perangkat pembelajaran siap digunakan.
+                            </p>
+                            
+                            {/* Area Menu & Fitur */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+                                    <h3 className="font-medium text-indigo-900 mb-1">Perangkat Pembelajaran</h3>
+                                    <p className="text-xs text-indigo-700">Kelola administrasi guru mapel.</p>
+                                </div>
+                                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                                    <h3 className="font-medium text-emerald-900 mb-1">Bank Soal & Kisi-Kisi</h3>
+                                    <p className="text-xs text-emerald-700">Buat dan ekspor format soal.</p>
+                                </div>
+                                <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl">
+                                    <h3 className="font-medium text-amber-900 mb-1">Data Siswa & Kelas</h3>
+                                    <p className="text-xs text-amber-700">Manajemen data siswa SMPN 1 Plampang.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
                 </div>
             );
         }
