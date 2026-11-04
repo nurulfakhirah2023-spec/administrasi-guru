@@ -33,13 +33,13 @@
 
             // State Modul Ajar / CP & TP
             const [modulList, setModulList] = React.useState([
-                { id: 1, mapel: 'Informatika', bab: 'Bab 2 & 3', tp: 'Belajar mengenai konsep dasar informatika dan memanfaatkan tools/perkakas dalam kehidupan.' }
+                { id: 1, mapel: 'Informatika', bab: 'Berpikir Komputasional', tp: 'Memahami konsep dekomposisi dan pengenalan pola dalam pemecahan masalah.' }
             ]);
             const [newMapel, setNewMapel] = React.useState('');
             const [newBab, setNewBab] = React.useState('');
             const [newTp, setNewTp] = React.useState('');
 
-            // State Alokasi Jumlah Soal Generator per TP
+            // State Alokasi Jumlah Soal Generator per TP (Default: Sesuai Kebutuhan)
             const [genConfig, setGenConfig] = React.useState({
                 pg: 5,
                 pgKompleks: 2,
@@ -99,12 +99,12 @@
                 setNewTp('');
             };
 
-            // GENERATOR SOAL KUSTOM
+            // GENERATOR SOAL KUSTOM BERDASARKAN ALOKASI DAN TP
             const handleGenerateSoal = (modul) => {
                 const newGenerated = [];
                 let counter = 1;
 
-                // PG
+                // PG (A-E)
                 for (let i = 0; i < genConfig.pg; i++) {
                     newGenerated.push({
                         id: Date.now() + counter++,
@@ -112,8 +112,8 @@
                         mapel: modul.mapel,
                         bab: modul.bab,
                         sourceTp: modul.tp,
-                        text: `Berdasarkan pemahaman materi "${modul.bab}", manakah fungsi atau penerapan yang paling tepat dari ${modul.tp.substring(0, 35)}...?`,
-                        options: { A: 'Penggunaan perkakas dasar secara optimal', B: 'Penulisan dokumen manual tanpa verifikasi', C: 'Penyimpanan data fisik pada lemari', D: 'Pengabaian struktur data komputasi', E: 'Pencetakan ulang dokumen tanpa editing' },
+                        text: `Berdasarkan pemahaman materi "${modul.bab}", manakah penerapan yang paling tepat dari TP: "${modul.tp.substring(0, 40)}..."?`,
+                        options: { A: 'Penggunaan konsep dasar secara efektif', B: 'Penulisan dokumen manual tanpa verifikasi', C: 'Penyimpanan data fisik pada lemari', D: 'Pengabaian struktur data', E: 'Pencetakan ulang dokumen tanpa editing' },
                         key: 'A'
                     });
                 }
@@ -126,8 +126,8 @@
                         mapel: modul.mapel,
                         bab: modul.bab,
                         sourceTp: modul.tp,
-                        text: `Pilihlah beberapa pernyataan benar yang mendukung ketercapaian TP pada bab "${modul.bab}"!`,
-                        options: { A: 'Memahami fungsi utama sistem', B: 'Dapat mengoperasikan perkakas terkait', C: 'Mengabaikan instruksi kerja keselamatan', D: 'Mampu menganalisis kendala pemakaian', E: 'Menghindari kolaborasi kelompok' },
+                        text: `Pilihlah beberapa pernyataan yang mendukung ketercapaian TP pada bab "${modul.bab}"!`,
+                        options: { A: 'Memahami konsep utama', B: 'Dapat mengaplikasikan perkakas terkait', C: 'Mengabaikan prosedur kerja', D: 'Mampu menganalisis masalah', E: 'Menghindari diskusi kelompok' },
                         key: 'A, B, D'
                     });
                 }
@@ -140,7 +140,7 @@
                         mapel: modul.mapel,
                         bab: modul.bab,
                         sourceTp: modul.tp,
-                        text: `Jodohkanlah istilah pada Kolom Kiri dengan fungsi pada Kolom Kanan yang sesuai dengan materi "${modul.bab}"!`,
+                        text: `Jodohkanlah istilah pada Kolom Kiri dengan deskripsi pada Kolom Kanan yang sesuai dengan materi "${modul.bab}"!`,
                         options: null,
                         key: '-'
                     });
@@ -154,7 +154,7 @@
                         mapel: modul.mapel,
                         bab: modul.bab,
                         sourceTp: modul.tp,
-                        text: `Sebuah komponen utama dalam pencapaian TP "${modul.tp.substring(0, 30)}..." dinamakan ________.`,
+                        text: `Istilah teknis utama yang digunakan dalam pencapaian TP "${modul.tp.substring(0, 30)}..." adalah ________.`,
                         options: null,
                         key: '-'
                     });
@@ -168,7 +168,7 @@
                         mapel: modul.mapel,
                         bab: modul.bab,
                         sourceTp: modul.tp,
-                        text: `Uraikan secara sistematis dan jelas bagaimana penerapan TP: "${modul.tp}" dalam kehidupan sehari-hari!`,
+                        text: `Jelaskan langkah-langkah konkret dalam mengaplikasikan TP: "${modul.tp}"!`,
                         options: null,
                         key: '-'
                     });
@@ -177,13 +177,13 @@
                 const totalGenerated = newGenerated.length;
                 setQuestionList([...questionList, ...newGenerated]);
                 setActiveTab('kisi-kisi');
-                alert(`Berhasil membuat ${totalGenerated} soal otomatis! Silakan unduh dokumen Kisi-Kisi & Soal (.docx) pada tab Kisi-Kisi.`);
+                alert(`Berhasil menghasilkan ${totalGenerated} soal otomatis (PG: ${genConfig.pg}, PG Kompleks: ${genConfig.pgKompleks}, Menjodohkan: ${genConfig.jodoh}, Isian: ${genConfig.isian}, Uraian: ${genConfig.uraian})!`);
             };
 
-            // FITUR UTAMA: EKSPOR KISI-KISI & SOAL KE MS WORD (.DOCX)
+            // EKSPOR KISI-KISI & SOAL KE MS WORD (.DOCX)
             const exportToWord = () => {
                 if (questionList.length === 0) {
-                    alert('Belum ada soal untuk diekspor!');
+                    alert('Belum ada soal untuk diekspor! Silakan generate soal terlebih dahulu.');
                     return;
                 }
 
@@ -275,7 +275,7 @@
                         <table width="100%" style="border:none;">
                             <tr>
                                 <td width="60%"></td>
-                                <td text-align="center">
+                                <td style="text-align:center;">
                                     Plampang, ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}<br/>
                                     Guru Mata Pelajaran,<br/><br/><br/><br/>
                                     <strong><u>Ardin Yusuf, S.Pd.</u></strong><br/>
@@ -287,10 +287,7 @@
                     </html>
                 `;
 
-                const blob = new Blob(['\ufeff' + headerHtml], {
-                    type: 'application/msword'
-                });
-
+                const blob = new Blob(['\ufeff' + headerHtml], { type: 'application/msword' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -325,7 +322,7 @@
                             <button onClick={() => setActiveTab('siswa')} className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'siswa' ? 'bg-indigo-50 text-indigo-700 font-semibold shadow-sm' : 'text-slate-600 hover:bg-slate-50'}`}>👥 Data Siswa & Kelas</button>
                         </aside>
 
-                        {/* Area Konten */}
+                        {/* Area Konten Utama */}
                         <main className="flex-1 p-6">
                             {/* TAB DASHBOARD */}
                             {activeTab === 'dashboard' && (
@@ -339,7 +336,7 @@
                                             <span className="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-md font-medium">Status System: Aktif</span>
                                         </div>
                                         <p className="text-xs text-slate-600 leading-relaxed">
-                                            Kelola modul TP, susun jumlah alokasi bentuk soal, lalu ekspor langsung dokumen Kisi-Kisi & Soal berformat Word (.doc/.docx) siap cetak.
+                                            Atur alokasi jumlah bentuk soal pada menu Perangkat Pembelajaran, klik <strong>Generate Soal Otomatis</strong>, lalu unduh dokumen Kisi-Kisi & Soal ke Microsoft Word (.docx).
                                         </p>
                                     </div>
                                 </div>
@@ -353,9 +350,9 @@
                                         <p className="text-xs text-slate-500">Guru Pengampu: <strong>Ardin Yusuf, S.Pd.</strong></p>
                                     </div>
 
-                                    {/* Pengaturan Alokasi Jumlah Soal */}
-                                    <div className="bg-indigo-50/70 p-4 rounded-xl border border-indigo-100 space-y-3">
-                                        <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wide">⚙️ Pengaturan Alokasi Jumlah Soal (Saat Generate Otomatis)</h4>
+                                    {/* FORM PENGATURAN ALOKASI BENTUK SOAL */}
+                                    <div className="bg-indigo-50/80 p-4 rounded-xl border border-indigo-100 space-y-3">
+                                        <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wide">⚙️ Pengaturan Alokasi Bentuk Soal (Saat Generate Otomatis)</h4>
                                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                                             <div>
                                                 <label className="block text-[11px] font-semibold text-indigo-800 mb-1">Pilihan Ganda (A-E)</label>
@@ -384,14 +381,14 @@
                                     <form onSubmit={handleAddModul} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                                         <h4 className="text-xs font-bold text-slate-700">Tambah Tujuan Pembelajaran (TP) Baru</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                            <input type="text" placeholder="Mata Pelajaran (misal: Informatika)" value={newMapel} onChange={(e) => setNewMapel(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white" />
+                                            <input type="text" placeholder="Mata Pelajaran (misal: IPA / Informatika)" value={newMapel} onChange={(e) => setNewMapel(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white" />
                                             <input type="text" placeholder="Topik / Bab Pembelajaran" value={newBab} onChange={(e) => setNewBab(e.target.value)} className="border border-slate-300 rounded-lg px-3 py-2 text-xs bg-white" />
                                         </div>
-                                        <textarea placeholder="Tuliskan kalimat Tujuan Pembelajaran (TP)..." value={newTp} onChange={(e) => setNewTp(e.target.value)} className="w-full border border-slate-300 rounded-lg p-2.5 text-xs bg-white h-16" />
+                                        <textarea placeholder="Tuliskan kalimat Tujuan Pembelajaran (TP) di sini..." value={newTp} onChange={(e) => setNewTp(e.target.value)} className="w-full border border-slate-300 rounded-lg p-2.5 text-xs bg-white h-16" />
                                         <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-medium">+ Simpan TP</button>
                                     </form>
 
-                                    {/* Daftar TP & Action Generator */}
+                                    {/* Daftar TP dengan Tombol Generator Soal Otomatis */}
                                     <div className="space-y-3 pt-2">
                                         <h4 className="text-xs font-bold text-slate-700">Daftar TP Tersimpan & Action Generator:</h4>
                                         {modulList.map(m => (
@@ -417,7 +414,7 @@
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                                     <div className="border-b pb-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
                                         <div>
-                                            <h2 className="text-lg font-bold text-slate-800">Bank Soal & Matriks Kisi-Kisi</h2>
+                                            <h2 className="text-lg font-bold text-slate-800">Bank Soal & Matriks Kisi-Kisi Asesmen</h2>
                                             <p className="text-xs text-slate-500">Penyusun: <strong>Ardin Yusuf, S.Pd.</strong> | Total Soal: {questionList.length}</p>
                                         </div>
                                         <button 
