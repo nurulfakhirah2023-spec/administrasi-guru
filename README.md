@@ -16,6 +16,8 @@
 </head>
 <body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
+    <!-- Script Babel dan React -->
+</body>
 
     <script type="text/babel">
         // Salin atau sesuaikan komponen utama aplikasi Anda di sini
