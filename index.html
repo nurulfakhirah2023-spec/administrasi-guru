@@ -19,8 +19,9 @@
         function App() {
             const [activeTab, setActiveTab] = React.useState('dashboard');
             const [selectedClass, setSelectedClass] = React.useState('VII-A');
+            const [activeModal, setActiveModal] = React.useState(null); // Modal detail kartu
             
-            // State Data Siswa
+            // State Data Siswa (LocalStorage)
             const [students, setStudents] = React.useState(() => {
                 const saved = localStorage.getItem('smpn1_students');
                 return saved ? JSON.parse(saved) : [
@@ -33,9 +34,10 @@
             const [newStudentNis, setNewStudentNis] = React.useState('');
 
             // State Bank Soal & Kisi-kisi
-            const [questionType, setQuestionType] = React.useState('Pilihan Ganda');
+            const [selectedQuestionType, setSelectedQuestionType] = React.useState('Pilihan Ganda');
             const [questionList, setQuestionList] = React.useState([
-                { id: 1, type: 'Pilihan Ganda', text: 'Contoh soal pilihan ganda pertama...', options: ['A', 'B', 'C', 'D'], key: 'A' }
+                { id: 1, type: 'Pilihan Ganda', text: 'Sebutkan kebudayaan daerah tempat sekolah berada...', options: ['A', 'B', 'C', 'D'], key: 'A' },
+                { id: 2, type: 'Uraian / Essay', text: 'Jelaskan alur penyusunan administrasi pembelajaran!', options: [], key: '-' }
             ]);
             const [newQuestionText, setNewQuestionText] = React.useState('');
 
@@ -43,27 +45,25 @@
                 localStorage.setItem('smpn1_students', JSON.stringify(students));
             }, [students]);
 
-            // Tambah Siswa Manual
+            // Handler Tambah Siswa Manual
             const handleAddStudent = (e) => {
                 e.preventDefault();
                 if (!newStudentName.trim() || !newStudentNis.trim()) return;
-                const newStudent = {
+                setStudents([...students, {
                     id: Date.now(),
                     name: newStudentName,
                     nis: newStudentNis,
                     class: selectedClass
-                };
-                setStudents([...students, newStudent]);
+                }]);
                 setNewStudentName('');
                 setNewStudentNis('');
             };
 
-            // Hapus Siswa
             const handleDeleteStudent = (id) => {
                 setStudents(students.filter(s => s.id !== id));
             };
 
-            // Fitur Impor Siswa dari File CSV/Excel (.csv)
+            // Handler Impor CSV/Excel
             const handleFileUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -71,35 +71,34 @@
                 reader.onload = (event) => {
                     const text = event.target.result;
                     const rows = text.split('\n');
-                    const newStudentsList = [...students];
-                    
-                    rows.forEach((row, index) => {
-                        if (index === 0) return; // Lewati baris header
+                    const updatedStudents = [...students];
+                    rows.forEach((row, idx) => {
+                        if (idx === 0) return; // Skip Header
                         const cols = row.split(',');
-                        if (cols.length >= 2) {
-                            const nis = cols[0].trim();
-                            const name = cols[1].trim();
-                            if (nis && name) {
-                                newStudentsList.push({
-                                    id: Date.now() + index,
-                                    nis: nis,
-                                    name: name,
-                                    class: selectedClass
-                                });
-                            }
+                        if (cols.length >= 2 && cols[0].trim() && cols[1].trim()) {
+                            updatedStudents.push({
+                                id: Date.now() + idx,
+                                nis: cols[0].trim(),
+                                name: cols[1].trim(),
+                                class: selectedClass
+                            });
                         }
                     });
-                    setStudents(newStudentsList);
+                    setStudents(updatedStudents);
                     alert('Data siswa berhasil diimpor!');
                 };
                 reader.readAsText(file);
             };
 
-            // Tambah Soal
+            // Handler Tambah Soal
             const handleAddQuestion = (e) => {
                 e.preventDefault();
                 if (!newQuestionText.trim()) return;
-                setQuestionList([...questionList, { id: Date.now(), type: questionType, text: newQuestionText }]);
+                setQuestionList([...questionList, {
+                    id: Date.now(),
+                    type: selectedQuestionType,
+                    text: newQuestionText
+                }]);
                 setNewQuestionText('');
             };
 
@@ -162,26 +161,26 @@
                                             <span className="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-md font-medium">Status System: Aktif</span>
                                         </div>
                                         <p className="text-xs text-slate-600 leading-relaxed">
-                                            Seluruh modul administrasi pembelajaran, kisi-kisi asesmen, dan data siswa SMPN 1 Plampang siap diakses dan dikelola melalui menu interaktif.
+                                            Klik salah satu modul di bawah ini untuk mengelola administrasi pembelajaran, kisi-kisi asesmen, atau data siswa SMPN 1 Plampang.
                                         </p>
 
                                         {/* Grid Kartu Interaktif */}
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                                            <div onClick={() => setActiveTab('perangkat')} className="p-5 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-100 rounded-2xl cursor-pointer transition shadow-xs group">
-                                                <h3 className="font-semibold text-indigo-900">Perangkat Pembelajaran</h3>
-                                                <p className="text-xs text-indigo-700/80 mt-1">Kelola administrasi guru mapel, modul ajar, dan CP/TP.</p>
+                                            <div onClick={() => setActiveTab('perangkat')} className="p-5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-2xl cursor-pointer transition group shadow-xs">
+                                                <h3 className="font-semibold text-indigo-900 group-hover:text-indigo-700">Perangkat Pembelajaran</h3>
+                                                <p className="text-xs text-indigo-700/80 mt-1">Kelola CP/TP, Modul Ajar, dan RPP.</p>
                                                 <span className="inline-block mt-3 text-xs font-semibold text-indigo-600">Buka Modul &rarr;</span>
                                             </div>
 
-                                            <div onClick={() => setActiveTab('kisi-kisi')} className="p-5 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-100 rounded-2xl cursor-pointer transition shadow-xs group">
-                                                <h3 className="font-semibold text-emerald-900">Bank Soal & Kisi-Kisi</h3>
+                                            <div onClick={() => setActiveTab('kisi-kisi')} className="p-5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-2xl cursor-pointer transition group shadow-xs">
+                                                <h3 className="font-semibold text-emerald-900 group-hover:text-emerald-700">Bank Soal & Kisi-Kisi</h3>
                                                 <p className="text-xs text-emerald-700/80 mt-1">Buat, susun kisi-kisi, dan kelola bank soal asesmen.</p>
                                                 <span className="inline-block mt-3 text-xs font-semibold text-emerald-600">Buka Modul &rarr;</span>
                                             </div>
 
-                                            <div onClick={() => setActiveTab('siswa')} className="p-5 bg-amber-50 hover:bg-amber-100/80 border border-amber-100 rounded-2xl cursor-pointer transition shadow-xs group">
-                                                <h3 className="font-semibold text-amber-900">Data Siswa & Kelas</h3>
-                                                <p className="text-xs text-amber-700/80 mt-1">Manajemen daftar siswa dan impor data via file Excel/CSV.</p>
+                                            <div onClick={() => setActiveTab('siswa')} className="p-5 bg-amber-50 hover:bg-amber-100 border border-amber-100 rounded-2xl cursor-pointer transition group shadow-xs">
+                                                <h3 className="font-semibold text-amber-900 group-hover:text-amber-700">Data Siswa & Kelas</h3>
+                                                <p className="text-xs text-amber-700/80 mt-1">Manajemen daftar siswa dan impor via File Excel/CSV.</p>
                                                 <span className="inline-block mt-3 text-xs font-semibold text-amber-600">Buka Modul &rarr;</span>
                                             </div>
                                         </div>
@@ -189,71 +188,94 @@
                                 </div>
                             )}
 
-                            {/* TAB PERANGKAT */}
+                            {/* TAB PERANGKAT PEMBELAJARAN */}
                             {activeTab === 'perangkat' && (
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                                     <h2 className="text-lg font-bold text-slate-800">Perangkat Pembelajaran Guru</h2>
-                                    <p className="text-xs text-slate-600">Pengelola Perangkat Kurikulum Merdeka untuk <strong>Ardin Yusuf, S.Pd.</strong></p>
-                                    <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
-                                        <h4 className="font-semibold text-sm text-slate-800">Modul Ajar & Bahan Ajar</h4>
-                                        <p className="text-xs text-slate-500 mt-1">Dokumen perangkat siap diunduh dan disesuaikan.</p>
+                                    <p className="text-xs text-slate-600">Pengelola Perangkat Kurikulum Merdeka / K13 untuk <strong>Ardin Yusuf, S.Pd.</strong></p>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                                        <div 
+                                            onClick={() => setActiveModal('CP & TP')}
+                                            className="p-5 border border-slate-200 hover:border-indigo-400 bg-slate-50 hover:bg-indigo-50/50 rounded-2xl cursor-pointer transition group"
+                                        >
+                                            <h4 className="font-semibold text-sm text-slate-800 group-hover:text-indigo-600">Capaian Pembelajaran (CP) & TP</h4>
+                                            <p className="text-xs text-slate-500 mt-1">Pemetaan Alur Tujuan Pembelajaran per mata pelajaran.</p>
+                                            <span className="inline-block mt-3 text-xs font-semibold text-indigo-600">Klik untuk Kelola &rarr;</span>
+                                        </div>
+
+                                        <div 
+                                            onClick={() => setActiveModal('Modul Ajar')}
+                                            className="p-5 border border-slate-200 hover:border-indigo-400 bg-slate-50 hover:bg-indigo-50/50 rounded-2xl cursor-pointer transition group"
+                                        >
+                                            <h4 className="font-semibold text-sm text-slate-800 group-hover:text-indigo-600">Modul Ajar / RPP</h4>
+                                            <p className="text-xs text-slate-500 mt-1">Penyusunan modul pembelajaran harian dan asesmen formatif.</p>
+                                            <span className="inline-block mt-3 text-xs font-semibold text-indigo-600">Klik untuk Kelola &rarr;</span>
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* TAB KISI-KISI & BANK SOAL (DIAKTIFKAN) */}
+                            {/* TAB KISI-KISI & BANK SOAL */}
                             {activeTab === 'kisi-kisi' && (
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                                     <div className="flex justify-between items-center border-b pb-4">
                                         <div>
                                             <h2 className="text-lg font-bold text-slate-800">Modul Bank Soal & Kisi-Kisi Asesmen</h2>
-                                            <p className="text-xs text-slate-500">Penyusun: Ardin Yusuf, S.Pd.</p>
+                                            <p className="text-xs text-slate-500">Penyusun Asesmen: <strong>Ardin Yusuf, S.Pd.</strong></p>
                                         </div>
+                                    </div>
+
+                                    {/* Pemilih Tipe Format Soal */}
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2">
+                                        {['Pilihan Ganda', 'PG Kompleks', 'Menjodohkan', 'Isian Singkat', 'Uraian / Essay'].map(type => (
+                                            <div 
+                                                key={type}
+                                                onClick={() => setSelectedQuestionType(type)}
+                                                className={`p-3 border rounded-xl text-center cursor-pointer transition ${selectedQuestionType === type ? 'border-indigo-600 bg-indigo-50 text-indigo-700 font-bold' : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'}`}
+                                            >
+                                                <span className="block text-xs font-semibold">{type}</span>
+                                                <span className="text-[11px] text-slate-500">
+                                                    {questionList.filter(q => q.type === type).length} Soal
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
 
                                     {/* Form Tambah Soal */}
                                     <form onSubmit={handleAddQuestion} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                                         <div className="flex gap-2">
-                                            <select 
-                                                value={questionType} 
-                                                onChange={(e) => setQuestionType(e.target.value)}
-                                                className="border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium"
-                                            >
-                                                <option value="Pilihan Ganda">Pilihan Ganda</option>
-                                                <option value="PG Kompleks">PG Kompleks</option>
-                                                <option value="Menjodohkan">Menjodohkan</option>
-                                                <option value="Isian Singkat">Isian Singkat</option>
-                                                <option value="Uraian / Essay">Uraian / Essay</option>
-                                            </select>
                                             <input 
                                                 type="text"
-                                                placeholder="Tuliskan bunyi pertanyaan / soal..."
+                                                placeholder={`Tuliskan soal baru untuk format: ${selectedQuestionType}...`}
                                                 value={newQuestionText}
                                                 onChange={(e) => setNewQuestionText(e.target.value)}
                                                 className="border border-slate-300 rounded-lg px-3 py-2 text-xs flex-1"
                                             />
-                                            <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-medium">
+                                            <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-medium shadow-sm transition">
                                                 + Tambah Soal
                                             </button>
                                         </div>
                                     </form>
 
                                     {/* Daftar Soal */}
-                                    <div className="space-y-2 max-h-72 overflow-y-auto">
-                                        {questionList.map((q, idx) => (
-                                            <div key={q.id} className="p-3 bg-white border border-slate-200 rounded-xl text-xs flex justify-between items-center">
-                                                <div>
-                                                    <span className="font-bold text-indigo-600 mr-2">[{q.type}]</span>
-                                                    <span>{idx + 1}. {q.text}</span>
+                                    <div className="space-y-2 max-h-64 overflow-y-auto pt-2 border-t border-slate-100">
+                                        <h4 className="text-xs font-bold text-slate-700">Daftar Soal Format ({selectedQuestionType}):</h4>
+                                        {questionList.filter(q => q.type === selectedQuestionType).length === 0 ? (
+                                            <p className="text-xs text-slate-400 py-3 text-center">Belum ada soal untuk format ini.</p>
+                                        ) : (
+                                            questionList.filter(q => q.type === selectedQuestionType).map((q, idx) => (
+                                                <div key={q.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs flex justify-between items-center">
+                                                    <span><strong>{idx + 1}.</strong> {q.text}</span>
+                                                    <button onClick={() => setQuestionList(questionList.filter(item => item.id !== q.id))} className="text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded hover:bg-rose-50">Hapus</button>
                                                 </div>
-                                                <button onClick={() => setQuestionList(questionList.filter(item => item.id !== q.id))} className="text-rose-600 hover:text-rose-800 font-medium">Hapus</button>
-                                            </div>
-                                        ))}
+                                            ))
+                                        )}
                                     </div>
                                 </div>
                             )}
 
-                            {/* TAB DATA SISWA & IMPORT EXCEL */}
+                            {/* TAB DATA SISWA & IMPOR EXCEL */}
                             {activeTab === 'siswa' && (
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                                     <div className="flex justify-between items-center border-b pb-4">
@@ -273,11 +295,11 @@
                                         </select>
                                     </div>
 
-                                    {/* Bagian Upload File Excel/CSV */}
+                                    {/* Impor CSV/Excel */}
                                     <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex justify-between items-center">
                                         <div>
                                             <h4 className="text-xs font-bold text-indigo-900">Impor Data Siswa (Format CSV / Excel)</h4>
-                                            <p className="text-[11px] text-indigo-700/80 mt-0.5">Unggah file berformat `.csv` dengan kolom: <code>NIS, Nama Lengkap</code></p>
+                                            <p className="text-[11px] text-indigo-700/80 mt-0.5">Format file .csv: <code>NIS, Nama Lengkap Siswa</code></p>
                                         </div>
                                         <label className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-medium cursor-pointer shadow-sm transition">
                                             📁 Unggah File Excel/CSV
@@ -285,7 +307,7 @@
                                         </label>
                                     </div>
 
-                                    {/* Form Tambah Siswa Manual */}
+                                    {/* Form Manual */}
                                     <form onSubmit={handleAddStudent} className="flex gap-2">
                                         <input 
                                             type="text"
@@ -314,7 +336,7 @@
                                             students.filter(s => s.class === selectedClass).map(s => (
                                                 <div key={s.id} className="flex justify-between items-center text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
                                                     <span><strong className="text-indigo-600 font-semibold">{s.nis}</strong> - {s.name}</span>
-                                                    <button onClick={() => handleDeleteStudent(s.id)} className="text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded-md hover:bg-rose-50">
+                                                    <button onClick={() => handleDeleteStudent(s.id)} className="text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded hover:bg-rose-50">
                                                         Hapus
                                                     </button>
                                                 </div>
@@ -325,11 +347,16 @@
                             )}
                         </main>
                     </div>
-                </div>
-            );
-        }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-    </script>
-</body>
-</html>
+                    {/* Popup / Modal Interaktif Kartu */}
+                    {activeModal && (
+                        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+                            <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl border border-slate-200 space-y-4">
+                                <h3 className="text-base font-bold text-slate-800">Modul: {activeModal}</h3>
+                                <p className="text-xs text-slate-600 leading-relaxed">
+                                    Pengelolaan detail untuk <strong>{activeModal}</strong> atas nama Guru Pengampu <strong>Ardin Yusuf, S.Pd.</strong> siap dikonfigurasi.
+                                </p>
+                                <div className="p-3 bg-slate-50 border rounded-xl text-xs text-slate-500">
+                                    Status: Terintegrasi dengan Kurikulum SMPN 1 Plampang.
+                                </div>
+                                <div className="
