@@ -12,7 +12,7 @@
     <!-- Babel untuk JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-900 m-0 p-0">
+<body class="bg-slate-50 text-slate-900 m-0 p-0 font-sans">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -20,7 +20,7 @@
             const [activeTab, setActiveTab] = React.useState('dashboard');
             const [selectedClass, setSelectedClass] = React.useState('VII-A');
             
-            // Load / Save Data Siswa dari LocalStorage
+            // State Data Siswa
             const [students, setStudents] = React.useState(() => {
                 const saved = localStorage.getItem('smpn1_students');
                 return saved ? JSON.parse(saved) : [
@@ -32,10 +32,18 @@
             const [newStudentName, setNewStudentName] = React.useState('');
             const [newStudentNis, setNewStudentNis] = React.useState('');
 
+            // State Bank Soal & Kisi-kisi
+            const [questionType, setQuestionType] = React.useState('Pilihan Ganda');
+            const [questionList, setQuestionList] = React.useState([
+                { id: 1, type: 'Pilihan Ganda', text: 'Contoh soal pilihan ganda pertama...', options: ['A', 'B', 'C', 'D'], key: 'A' }
+            ]);
+            const [newQuestionText, setNewQuestionText] = React.useState('');
+
             React.useEffect(() => {
                 localStorage.setItem('smpn1_students', JSON.stringify(students));
             }, [students]);
 
+            // Tambah Siswa Manual
             const handleAddStudent = (e) => {
                 e.preventDefault();
                 if (!newStudentName.trim() || !newStudentNis.trim()) return;
@@ -50,12 +58,53 @@
                 setNewStudentNis('');
             };
 
+            // Hapus Siswa
             const handleDeleteStudent = (id) => {
                 setStudents(students.filter(s => s.id !== id));
             };
 
+            // Fitur Impor Siswa dari File CSV/Excel (.csv)
+            const handleFileUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const text = event.target.result;
+                    const rows = text.split('\n');
+                    const newStudentsList = [...students];
+                    
+                    rows.forEach((row, index) => {
+                        if (index === 0) return; // Lewati baris header
+                        const cols = row.split(',');
+                        if (cols.length >= 2) {
+                            const nis = cols[0].trim();
+                            const name = cols[1].trim();
+                            if (nis && name) {
+                                newStudentsList.push({
+                                    id: Date.now() + index,
+                                    nis: nis,
+                                    name: name,
+                                    class: selectedClass
+                                });
+                            }
+                        }
+                    });
+                    setStudents(newStudentsList);
+                    alert('Data siswa berhasil diimpor!');
+                };
+                reader.readAsText(file);
+            };
+
+            // Tambah Soal
+            const handleAddQuestion = (e) => {
+                e.preventDefault();
+                if (!newQuestionText.trim()) return;
+                setQuestionList([...questionList, { id: Date.now(), type: questionType, text: newQuestionText }]);
+                setNewQuestionText('');
+            };
+
             return (
-                <div className="min-h-screen flex flex-col bg-slate-100 font-sans">
+                <div className="min-h-screen flex flex-col bg-slate-100">
                     {/* Header Utama */}
                     <header className="bg-indigo-600 text-white shadow-md p-4 flex justify-between items-center">
                         <div>
@@ -113,35 +162,26 @@
                                             <span className="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-md font-medium">Status System: Aktif</span>
                                         </div>
                                         <p className="text-xs text-slate-600 leading-relaxed">
-                                            Seluruh modul administrasi pembelajaran, kisi-kisi asesmen, dan data siswa SMPN 1 Plampang siap diakses dan dikelola melalui kartu menu interaktif di bawah ini.
+                                            Seluruh modul administrasi pembelajaran, kisi-kisi asesmen, dan data siswa SMPN 1 Plampang siap diakses dan dikelola melalui menu interaktif.
                                         </p>
 
                                         {/* Grid Kartu Interaktif */}
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                                            <div 
-                                                onClick={() => setActiveTab('perangkat')}
-                                                className="p-5 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-100 rounded-2xl cursor-pointer transition shadow-xs group"
-                                            >
-                                                <h3 className="font-semibold text-indigo-900 group-hover:text-indigo-700">Perangkat Pembelajaran</h3>
+                                            <div onClick={() => setActiveTab('perangkat')} className="p-5 bg-indigo-50 hover:bg-indigo-100/80 border border-indigo-100 rounded-2xl cursor-pointer transition shadow-xs group">
+                                                <h3 className="font-semibold text-indigo-900">Perangkat Pembelajaran</h3>
                                                 <p className="text-xs text-indigo-700/80 mt-1">Kelola administrasi guru mapel, modul ajar, dan CP/TP.</p>
                                                 <span className="inline-block mt-3 text-xs font-semibold text-indigo-600">Buka Modul &rarr;</span>
                                             </div>
 
-                                            <div 
-                                                onClick={() => setActiveTab('kisi-kisi')}
-                                                className="p-5 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-100 rounded-2xl cursor-pointer transition shadow-xs group"
-                                            >
-                                                <h3 className="font-semibold text-emerald-900 group-hover:text-emerald-700">Bank Soal & Kisi-Kisi</h3>
-                                                <p className="text-xs text-emerald-700/80 mt-1">Buat, susun kisi-kisi, dan ekspor format soal ke Word/PDF.</p>
+                                            <div onClick={() => setActiveTab('kisi-kisi')} className="p-5 bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-100 rounded-2xl cursor-pointer transition shadow-xs group">
+                                                <h3 className="font-semibold text-emerald-900">Bank Soal & Kisi-Kisi</h3>
+                                                <p className="text-xs text-emerald-700/80 mt-1">Buat, susun kisi-kisi, dan kelola bank soal asesmen.</p>
                                                 <span className="inline-block mt-3 text-xs font-semibold text-emerald-600">Buka Modul &rarr;</span>
                                             </div>
 
-                                            <div 
-                                                onClick={() => setActiveTab('siswa')}
-                                                className="p-5 bg-amber-50 hover:bg-amber-100/80 border border-amber-100 rounded-2xl cursor-pointer transition shadow-xs group"
-                                            >
-                                                <h3 className="font-semibold text-amber-900 group-hover:text-amber-700">Data Siswa & Kelas</h3>
-                                                <p className="text-xs text-amber-700/80 mt-1">Manajemen daftar siswa dan penataan kelas SMPN 1 Plampang.</p>
+                                            <div onClick={() => setActiveTab('siswa')} className="p-5 bg-amber-50 hover:bg-amber-100/80 border border-amber-100 rounded-2xl cursor-pointer transition shadow-xs group">
+                                                <h3 className="font-semibold text-amber-900">Data Siswa & Kelas</h3>
+                                                <p className="text-xs text-amber-700/80 mt-1">Manajemen daftar siswa dan impor data via file Excel/CSV.</p>
                                                 <span className="inline-block mt-3 text-xs font-semibold text-amber-600">Buka Modul &rarr;</span>
                                             </div>
                                         </div>
@@ -149,64 +189,71 @@
                                 </div>
                             )}
 
-                            {/* TAB PERANGKAT PEMBELAJARAN */}
+                            {/* TAB PERANGKAT */}
                             {activeTab === 'perangkat' && (
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                                     <h2 className="text-lg font-bold text-slate-800">Perangkat Pembelajaran Guru</h2>
-                                    <p className="text-xs text-slate-600">Pengelola Perangkat Kurikulum Merdeka / K13 untuk **Ardin Yusuf, S.Pd.**</p>
-                                    
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                        <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
-                                            <h4 className="font-semibold text-sm text-slate-800">Capaian Pembelajaran (CP) & TP</h4>
-                                            <p className="text-xs text-slate-500 mt-1">Pemetaan Alur Tujuan Pembelajaran per mata pelajaran.</p>
-                                        </div>
-                                        <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
-                                            <h4 className="font-semibold text-sm text-slate-800">Modul Ajar / RPP</h4>
-                                            <p className="text-xs text-slate-500 mt-1">Penyusunan modul pembelajaran harian dan asesmen formatif.</p>
-                                        </div>
+                                    <p className="text-xs text-slate-600">Pengelola Perangkat Kurikulum Merdeka untuk <strong>Ardin Yusuf, S.Pd.</strong></p>
+                                    <div className="p-4 border border-slate-200 rounded-xl bg-slate-50">
+                                        <h4 className="font-semibold text-sm text-slate-800">Modul Ajar & Bahan Ajar</h4>
+                                        <p className="text-xs text-slate-500 mt-1">Dokumen perangkat siap diunduh dan disesuaikan.</p>
                                     </div>
                                 </div>
                             )}
 
-                            {/* TAB KISI-KISI & BANK SOAL */}
+                            {/* TAB KISI-KISI & BANK SOAL (DIAKTIFKAN) */}
                             {activeTab === 'kisi-kisi' && (
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                                     <div className="flex justify-between items-center border-b pb-4">
                                         <div>
                                             <h2 className="text-lg font-bold text-slate-800">Modul Bank Soal & Kisi-Kisi Asesmen</h2>
-                                            <p className="text-xs text-slate-500">Penyusun Asesmen: Ardin Yusuf, S.Pd.</p>
+                                            <p className="text-xs text-slate-500">Penyusun: Ardin Yusuf, S.Pd.</p>
                                         </div>
-                                        <button className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-indigo-700">
-                                            + Tambah Soal Baru
-                                        </button>
                                     </div>
 
-                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-2">
-                                        <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-center">
-                                            <span className="block text-xs font-semibold text-slate-700">Pilihan Ganda</span>
-                                            <span className="text-xs text-indigo-600 font-bold">20 Soal</span>
+                                    {/* Form Tambah Soal */}
+                                    <form onSubmit={handleAddQuestion} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                                        <div className="flex gap-2">
+                                            <select 
+                                                value={questionType} 
+                                                onChange={(e) => setQuestionType(e.target.value)}
+                                                className="border border-slate-300 rounded-lg px-3 py-2 text-xs font-medium"
+                                            >
+                                                <option value="Pilihan Ganda">Pilihan Ganda</option>
+                                                <option value="PG Kompleks">PG Kompleks</option>
+                                                <option value="Menjodohkan">Menjodohkan</option>
+                                                <option value="Isian Singkat">Isian Singkat</option>
+                                                <option value="Uraian / Essay">Uraian / Essay</option>
+                                            </select>
+                                            <input 
+                                                type="text"
+                                                placeholder="Tuliskan bunyi pertanyaan / soal..."
+                                                value={newQuestionText}
+                                                onChange={(e) => setNewQuestionText(e.target.value)}
+                                                className="border border-slate-300 rounded-lg px-3 py-2 text-xs flex-1"
+                                            />
+                                            <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-medium">
+                                                + Tambah Soal
+                                            </button>
                                         </div>
-                                        <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-center">
-                                            <span className="block text-xs font-semibold text-slate-700">PG Kompleks</span>
-                                            <span className="text-xs text-indigo-600 font-bold">5 Soal</span>
-                                        </div>
-                                        <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-center">
-                                            <span className="block text-xs font-semibold text-slate-700">Menjodohkan</span>
-                                            <span className="text-xs text-indigo-600 font-bold">5 Soal</span>
-                                        </div>
-                                        <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-center">
-                                            <span className="block text-xs font-semibold text-slate-700">Isian Singkat</span>
-                                            <span className="text-xs text-indigo-600 font-bold">5 Soal</span>
-                                        </div>
-                                        <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-center">
-                                            <span className="block text-xs font-semibold text-slate-700">Uraian / Essay</span>
-                                            <span className="text-xs text-indigo-600 font-bold">5 Soal</span>
-                                        </div>
+                                    </form>
+
+                                    {/* Daftar Soal */}
+                                    <div className="space-y-2 max-h-72 overflow-y-auto">
+                                        {questionList.map((q, idx) => (
+                                            <div key={q.id} className="p-3 bg-white border border-slate-200 rounded-xl text-xs flex justify-between items-center">
+                                                <div>
+                                                    <span className="font-bold text-indigo-600 mr-2">[{q.type}]</span>
+                                                    <span>{idx + 1}. {q.text}</span>
+                                                </div>
+                                                <button onClick={() => setQuestionList(questionList.filter(item => item.id !== q.id))} className="text-rose-600 hover:text-rose-800 font-medium">Hapus</button>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* TAB DATA SISWA */}
+                            {/* TAB DATA SISWA & IMPORT EXCEL */}
                             {activeTab === 'siswa' && (
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
                                     <div className="flex justify-between items-center border-b pb-4">
@@ -226,7 +273,19 @@
                                         </select>
                                     </div>
 
-                                    {/* Form Tambah Siswa */}
+                                    {/* Bagian Upload File Excel/CSV */}
+                                    <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex justify-between items-center">
+                                        <div>
+                                            <h4 className="text-xs font-bold text-indigo-900">Impor Data Siswa (Format CSV / Excel)</h4>
+                                            <p className="text-[11px] text-indigo-700/80 mt-0.5">Unggah file berformat `.csv` dengan kolom: <code>NIS, Nama Lengkap</code></p>
+                                        </div>
+                                        <label className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-medium cursor-pointer shadow-sm transition">
+                                            📁 Unggah File Excel/CSV
+                                            <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
+                                        </label>
+                                    </div>
+
+                                    {/* Form Tambah Siswa Manual */}
                                     <form onSubmit={handleAddStudent} className="flex gap-2">
                                         <input 
                                             type="text"
@@ -242,26 +301,20 @@
                                             onChange={(e) => setNewStudentName(e.target.value)}
                                             className="border border-slate-300 rounded-lg px-3 py-2 text-xs flex-1"
                                         />
-                                        <button 
-                                            type="submit" 
-                                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition"
-                                        >
-                                            + Tambah Siswa
+                                        <button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg text-xs transition">
+                                            + Tambah Manual
                                         </button>
                                     </form>
 
                                     {/* Daftar Siswa */}
-                                    <div className="pt-3 border-t border-slate-200 max-h-64 overflow-y-auto space-y-2">
+                                    <div className="pt-3 border-t border-slate-200 max-h-60 overflow-y-auto space-y-2">
                                         {students.filter(s => s.class === selectedClass).length === 0 ? (
                                             <p className="text-xs text-slate-400 text-center py-4">Belum ada data siswa untuk kelas ini.</p>
                                         ) : (
                                             students.filter(s => s.class === selectedClass).map(s => (
                                                 <div key={s.id} className="flex justify-between items-center text-xs bg-slate-50 p-3 rounded-xl border border-slate-200">
                                                     <span><strong className="text-indigo-600 font-semibold">{s.nis}</strong> - {s.name}</span>
-                                                    <button 
-                                                        onClick={() => handleDeleteStudent(s.id)}
-                                                        className="text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded-md hover:bg-rose-50"
-                                                    >
+                                                    <button onClick={() => handleDeleteStudent(s.id)} className="text-rose-600 hover:text-rose-800 font-medium px-2 py-1 rounded-md hover:bg-rose-50">
                                                         Hapus
                                                     </button>
                                                 </div>
