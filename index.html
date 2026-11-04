@@ -11,52 +11,191 @@
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <!-- Babel untuk JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-50 text-slate-900 m-0 p-0">
     <div id="root"></div>
 
     <script type="text/babel">
-        // Masukkan atau sesuaikan komponen utama aplikasi Anda di sini
+        // Komponen Aplikasi Utama
         function App() {
             const [activeTab, setActiveTab] = React.useState('dashboard');
+            const [selectedClass, setSelectedClass] = React.useState('VII-A');
+            const [students, setStudents] = React.useState([
+                { id: 1, name: 'Ahmad Dahlan', nis: '1001', class: 'VII-A' },
+                { id: 2, name: 'Siti Nurhaliza', nis: '1002', class: 'VII-A' }
+            ]);
+            const [newStudentName, setNewStudentName] = React.useState('');
+            const [newStudentNis, setNewStudentNis] = React.useState('');
+
+            // Tambah Siswa Baru
+            const handleAddStudent = (e) => {
+                e.preventDefault();
+                if (!newStudentName.trim() || !newStudentNis.trim()) return;
+                const newStudent = {
+                    id: Date.now(),
+                    name: newStudentName,
+                    nis: newStudentNis,
+                    class: selectedClass
+                };
+                setStudents([...students, newStudent]);
+                setNewStudentName('');
+                setNewStudentNis('');
+            };
+
+            // Hapus Siswa
+            const handleDeleteStudent = (id) => {
+                setStudents(students.filter(s => s.id !== id));
+            };
 
             return (
                 <div className="min-h-screen flex flex-col bg-slate-100">
-                    {/* Header Aplikasi */}
+                    {/* Header */}
                     <header className="bg-indigo-600 text-white shadow-md p-4 flex justify-between items-center">
                         <div>
                             <h1 className="text-xl font-bold">Aplikasi Administrasi Guru Profesional</h1>
                             <p className="text-xs text-indigo-200">SMPN 1 Plampang</p>
                         </div>
+                        <span className="bg-indigo-700 px-3 py-1 rounded-full text-xs">Tahun Ajaran 2026/2027</span>
                     </header>
 
-                    {/* Konten Utama */}
-                    <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
-                        <div className="bg-white rounded-2xl shadow-sm p-6 border border-slate-200">
-                            <h2 className="text-lg font-semibold text-slate-800 mb-4">Panel Utama Administrasi</h2>
-                            <p className="text-sm text-slate-600 mb-6">
-                                Seluruh menu, pengelolaan data siswa, kisi-kisi soal, dan perangkat pembelajaran siap digunakan.
-                            </p>
-                            
-                            {/* Area Menu & Fitur */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
-                                    <h3 className="font-medium text-indigo-900 mb-1">Perangkat Pembelajaran</h3>
-                                    <p className="text-xs text-indigo-700">Kelola administrasi guru mapel.</p>
+                    <div className="flex flex-1">
+                        {/* Sidebar Menu */}
+                        <aside className="w-64 bg-white border-r border-slate-200 p-4 flex flex-col gap-2">
+                            <button 
+                                onClick={() => setActiveTab('dashboard')}
+                                className={`text-left px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'dashboard' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                            >
+                                📌 Dashboard
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('siswa')}
+                                className={`text-left px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'siswa' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                            >
+                                👥 Data Siswa & Kelas
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('kisi-kisi')}
+                                className={`text-left px-4 py-2 rounded-lg text-sm font-medium transition ${activeTab === 'kisi-kisi' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-600 hover:bg-slate-50'}`}
+                            >
+                                📝 Kisi-Kisi & Bank Soal
+                            </button>
+                        </aside>
+
+                        {/* Area Konten Utama */}
+                        <main className="flex-1 p-6">
+                            {/* TAB DASHBOARD */}
+                            {activeTab === 'dashboard' && (
+                                <div className="space-y-4">
+                                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                        <h2 className="text-lg font-bold text-slate-800 mb-2">Selamat Datang di Portal Guru</h2>
+                                        <p className="text-sm text-slate-600">
+                                            Sistem terintegrasi untuk pengelolaan administrasi, kisi-kisi soal, dan kelengkapan perangkat pembelajaran guru di SMPN 1 Plampang.
+                                        </p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                                            <h3 className="font-semibold text-indigo-900">Total Siswa</h3>
+                                            <p className="text-2xl font-bold text-indigo-600 mt-2">{students.length}</p>
+                                        </div>
+                                        <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                            <h3 className="font-semibold text-emerald-900">Kelas Aktif</h3>
+                                            <p className="text-2xl font-bold text-emerald-600 mt-2">VII-A</p>
+                                        </div>
+                                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                            <h3 className="font-semibold text-amber-900">Format Soal Supported</h3>
+                                            <p className="text-xs text-amber-700 mt-2">PG, Kompleks, Menjodohkan, Isian, Uraian</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
-                                    <h3 className="font-medium text-emerald-900 mb-1">Bank Soal & Kisi-Kisi</h3>
-                                    <p className="text-xs text-emerald-700">Buat dan ekspor format soal.</p>
+                            )}
+
+                            {/* TAB DATA SISWA */}
+                            {activeTab === 'siswa' && (
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                                    <div className="flex justify-between items-center border-b pb-4">
+                                        <h2 className="text-lg font-bold text-slate-800">Manajemen Data Siswa</h2>
+                                        <select 
+                                            value={selectedClass} 
+                                            onChange={(e) => setSelectedClass(e.target.value)}
+                                            className="border border-slate-300 rounded-lg px-3 py-1 text-sm"
+                                        >
+                                            <option value="VII-A">Kelas VII-A</option>
+                                            <option value="VII-B">Kelas VII-B</option>
+                                            <option value="VIII-A">Kelas VIII-A</option>
+                                            <option value="IX-A">Kelas IX-A</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Form Tambah Siswa */}
+                                    <form onSubmit={handleAddStudent} className="flex gap-2">
+                                        <input 
+                                            type="text"
+                                            placeholder="NIS"
+                                            value={newStudentNis}
+                                            onChange={(e) => setNewStudentNis(e.target.value)}
+                                            className="border border-slate-300 rounded-lg px-3 py-2 text-xs w-32"
+                                        />
+                                        <input 
+                                            type="text"
+                                            placeholder="Nama Lengkap Siswa"
+                                            value={newStudentName}
+                                            onChange={(e) => setNewStudentName(e.target.value)}
+                                            className="border border-slate-300 rounded-lg px-3 py-2 text-xs flex-1"
+                                        />
+                                        <button 
+                                            type="submit" 
+                                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg text-xs"
+                                        >
+                                            Tambah Siswa
+                                        </button>
+                                    </form>
+
+                                    {/* Daftar Siswa */}
+                                    <div className="pt-3 border-t border-slate-200 max-h-64 overflow-y-auto space-y-2">
+                                        {students.filter(s => s.class === selectedClass).map(s => (
+                                            <div key={s.id} className="flex justify-between items-center text-xs bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                                <span><strong className="text-indigo-600">{s.nis}</strong> - {s.name}</span>
+                                                <button 
+                                                    onClick={() => handleDeleteStudent(s.id)}
+                                                    className="text-rose-600 hover:text-rose-800 font-medium"
+                                                >
+                                                    Hapus
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                                <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl">
-                                    <h3 className="font-medium text-amber-900 mb-1">Data Siswa & Kelas</h3>
-                                    <p className="text-xs text-amber-700">Manajemen data siswa SMPN 1 Plampang.</p>
+                            )}
+
+                            {/* TAB KISI-KISI & BANK SOAL */}
+                            {activeTab === 'kisi-kisi' && (
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                                    <h2 className="text-lg font-bold text-slate-800">Modul Bank Soal & Kisi-Kisi</h2>
+                                    <p className="text-xs text-slate-600">Pilih format pertanyaan dan tentukan alokasi soal untuk diekspor ke Microsoft Word (.docx) atau cetak PDF.</p>
+                                    
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+                                        <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-center">
+                                            <span className="block text-xs font-semibold text-slate-700">Pilihan Ganda</span>
+                                            <span className="text-xs text-slate-500">20 Soal</span>
+                                        </div>
+                                        <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-center">
+                                            <span className="block text-xs font-semibold text-slate-700">PG Kompleks</span>
+                                            <span className="text-xs text-slate-500">5 Soal</span>
+                                        </div>
+                                        <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-center">
+                                            <span className="block text-xs font-semibold text-slate-700">Menjodohkan</span>
+                                            <span className="text-xs text-slate-500">5 Soal</span>
+                                        </div>
+                                        <div className="p-3 border border-slate-200 rounded-xl bg-slate-50 text-center">
+                                            <span className="block text-xs font-semibold text-slate-700">Uraian / Essay</span>
+                                            <span className="text-xs text-slate-500">5 Soal</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </main>
+                            )}
+                        </main>
+                    </div>
                 </div>
             );
         }
